@@ -21,17 +21,23 @@ programu GNUPLOT (dostepnego za darmo z Internetu).
 
 int main() {
 
-    double x;
+    long double x;
     double power = -10;
 
 
     while (power <= 3) {
-        x = pow(10, power);
-        double result = pow(x, 3) / (6 * (sinh(x) - x));
-        printf("power = %lf x = %.20e, result = %e\n",power, x, result);
+        break;
+        x = powl(10L, power);
+        long double result = powl(x, 3.0) / (6.0 * (sinh(x) - x));
+        printf("power = %.5e x = %.20e, result = %.20e\n",power, x, result);
         power += 0.01;
     }
 
-
+    while (power <= 3) {
+        // x = powl(10L, power);
+        // long double result = powl(x, 3.0) / (6.0 * (sinh(x) - x));
+        printf("power = %.50le\n",power);
+        power += 0.01;
+    }
     return 0;
 }
