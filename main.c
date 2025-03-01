@@ -44,6 +44,7 @@ void epsFloat(float prec) {
     ep = 2.0f * ep;
 
     printf("Float epsilon: %.65f\nFloat mantiss: %d\n", ep, mantissa);
+    printf("Float epsilon: %e\n", ep);
     printf("Float significant digits: %d\n", significantDigits(ep));
 }
 
@@ -58,6 +59,7 @@ void epsDouble(double prec) {
     ep = 2.0 * ep;
 
     printf("Double epsilon: %.65lf\nDouble mantiss: %d\n", ep, mantissa);
+    printf("Double epsilon: %e\n", ep);
     printf("Double significant digits: %d\n", significantDigits(ep));
 }
 
@@ -72,6 +74,7 @@ void epsLongDouble(long double prec) {
     ep = 2.0L * ep;
 
     printf("Long double epsilon: %.65Lf\nLong double mantiss: %d\n", ep, mantissa);
+    printf("Long double epsilon: %Le\n", ep);
     printf("Long double significant digits: %d\n", significantDigits(ep));
 
 }
