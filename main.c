@@ -19,25 +19,38 @@ programu GNUPLOT (dostepnego za darmo z Internetu).
 */
 
 
+void sinhlVersion();
+void sinhVersion();
+
 int main() {
 
+    sinhlVersion();
+
+    return 0;
+}
+
+//"Zaczyna dzialac poprawnie dla x = 10^(-5.77) i dziala dobrze do konca"
+void sinhlVersion()
+{
     long double x;
     double power = -10;
 
+    while (power <= 3) {
+        x = powl(10L, power);
+        long double result = powl(x, 3.0) / (6.0 * (sinhl(x) - x));
+        printf("power = %lf x = %.20Le result = %Le\n",power, x, result);
+        power += 0.01;
+    }
+}
+//"Zaczyna dzialac poprawnie dla x = 10^(-4.10) i konczy dla x = 10^2.85"
+void sinhVersion() {
+    long double x;
+    double power = -10;
 
     while (power <= 3) {
-        break;
         x = powl(10L, power);
         long double result = powl(x, 3.0) / (6.0 * (sinh(x) - x));
-        printf("power = %.5e x = %.20e, result = %.20e\n",power, x, result);
+        printf("power = %lf x = %.20Le result = %Le\n",power, x, result);
         power += 0.01;
     }
-
-    while (power <= 3) {
-        // x = powl(10L, power);
-        // long double result = powl(x, 3.0) / (6.0 * (sinh(x) - x));
-        printf("power = %.50le\n",power);
-        power += 0.01;
-    }
-    return 0;
 }
