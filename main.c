@@ -37,7 +37,7 @@ int main() {
     long double result;
 
     while (fscanf(file, "%Lf %Lf %Le", &col1, &col2, &col3) == 3) {
-        result = fun_taylor(col2);
+        result = fun(col2);
         long double error = fabsl((result - col3) / col3);
         error = log10l(error);
         fprintf(fileOutput, "%Lf %.20Le\n", col1, &error);
