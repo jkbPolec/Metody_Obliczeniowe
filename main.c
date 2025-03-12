@@ -33,12 +33,11 @@ int main() {
         return;
     }
 
-    long double col1, col2;
-    long double col3;
+    long double col1, col2, col3;
     long double result;
 
     while (fscanf(file, "%Lf %Lf %Le", &col1, &col2, &col3) == 3) {
-        result = fun(col2);
+        result = fun_taylor(col2);
         long double error = fabsl((result - col3) / col3);
         error = log10l(error);
         fprintf(fileOutput, "%Lf %.20Le\n", col1, &error);
@@ -59,3 +58,4 @@ long double fun_taylor(long double x) {
     long double sq = x*x;
     return 1.0L / (1.0L + (sq / 20.0L) + (sq * sq / 120.0L));
 }
+
