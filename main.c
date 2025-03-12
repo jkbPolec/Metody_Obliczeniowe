@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 /* Temat zadania:
 Zaimplementuj w jezyku "C/C++" algorytm obliczajacy przyblizone wartosci funkcji
@@ -18,39 +19,43 @@ Do wykonania rysunku w tym cwiczeniu (a takze w niektorych dalszych cwiczeniach)
 programu GNUPLOT (dostepnego za darmo z Internetu).
 */
 
-
-void sinhlVersion();
-void sinhVersion();
+long double fun(long double x);
+long double fun_taylor(long double x);
 
 int main() {
 
-    sinhlVersion();
+
+
+    FILE *file = fopen("../numbers.txt", "r");
+    FILE *fileOutput = fopen("../data.txt", "w");
+    if (file == NULL) {
+        perror("Unable to open file");
+        return;
+    }
+
+    long double col1, col2;
+    long double col3;
+    long double result;
+
+    while (fscanf(file, "%Lf %Lf %Le", &col1, &col2, &col3) == 3) {
+        result = fun(col2);
+        long double error = fabsl((result - col3) / col3);
+        error = log10l(error);
+        fprintf(fileOutput, "%Lf %.20Le\n", col1, &error);
+    }
+
+    fclose(fileOutput);
+    fclose(file);
 
     return 0;
 }
 
-//"Zaczyna dzialac poprawnie dla x = 10^(-5.77) i dziala dobrze do konca"
-void sinhlVersion()
-{
-    long double x;
-    double power = -10;
 
-    while (power <= 3) {
-        x = powl(10L, power);
-        long double result = powl(x, 3.0) / (6.0 * (sinhl(x) - x));
-        printf("power = %lf x = %.20Le result = %Le\n",power, x, result);
-        power += 0.01;
-    }
+long double fun(long double x) {
+    return (x*x*x / (6 * (sinh(x) - x)));
 }
-//"Zaczyna dzialac poprawnie dla x = 10^(-4.10) i konczy dla x = 10^2.85"
-void sinhVersion() {
-    long double x;
-    double power = -10;
 
-    while (power <= 3) {
-        x = powl(10L, power);
-        long double result = powl(x, 3.0) / (6.0 * (sinh(x) - x));
-        printf("power = %lf x = %.20Le result = %Le\n",power, x, result);
-        power += 0.01;
-    }
+long double fun_taylor(long double x) {
+    long double sq = x*x;
+    return 1.0L / (1.0L + (sq / 20.0L) + (sq * sq / 120.0L));
 }
