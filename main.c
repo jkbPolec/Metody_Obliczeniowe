@@ -12,12 +12,20 @@ long double picardTan(long double x) {
     return -1.0L/2.0L * tanhl(x)+1.0L;
 }
 
+long double newtonTan(long double x) {
+    return 1.0L - tanhl(x) * tanhl(x) + 2.0L;
+}
+
 long double sinFunction(long double x) {
     return sinhl(x) + x/4 - 1;
 }
 
 long double picardSin(long double x) {
     return 4.0L * coshl(x);
+}
+
+long double newtonSin(long double x) {
+    return coshl(x) + 1.0L / 4.0L;
 }
 
 
@@ -27,6 +35,7 @@ long double Picard() {
     long double x0 = 0.0L;
     long double oldX0;
 
+    printf("Picard\n");
     while (n < MAXN) {
         oldX0 = x0;
         x0 = picardTan(x0);
@@ -64,9 +73,11 @@ long double Bisection() {
 
     int n = 0;
 
+    printf("Bisection\n");
+
     while (n < MAXN) {
         c = (a + b) / 2.0L;
-        if (sinFunction(c) * sinFunction(a) < 0) {
+        if (tanFunction(c) * tanFunction(a) < 0) {
             b = c;
         } else {
             a = c;
@@ -86,7 +97,7 @@ long double Bisection() {
 
     while (n < MAXN) {
         c = (a + b) / 2.0L;
-        if (tanFunction(c) * tanFunction(a) < 0) {
+        if (sinFunction(c) * sinFunction(a) < 0) {
             b = c;
         } else {
             a = c;
@@ -94,10 +105,50 @@ long double Bisection() {
         n += 1;
     }
 
+
+
     printf("%Lf\n", c);
 
 
 
+}
+
+long double Newton()
+{
+    long double x = 0;
+    long double x0 = 0;
+    int n = 0;
+
+    printf("Newton\n");
+
+    while (n < MAXN) {
+        x0 = x - tanFunction(x)/newtonTan(x);
+
+        if (fabsl(x0 - x) < EPS)
+        {
+            break;
+        }
+
+        x = x0;
+        n += 1;
+    }
+
+    printf("%Lf\n", x);
+
+
+    while (n < MAXN) {
+        x0 = x - sinFunction(x)/newtonSin(x);
+
+        if (fabsl(x0 - x) < EPS)
+        {
+            break;
+        }
+
+        x = x0;
+        n += 1;
+    }
+
+    printf("%Lf\n", x);
 }
 
 
@@ -110,5 +161,9 @@ int main() {
     printf("");
 
     Bisection();
+
+    printf("");
+
+    Newton();
     return 0;
 }
