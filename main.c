@@ -21,7 +21,7 @@ long double sinFunction(long double x) {
 }
 
 long double picardSin(long double x) {
-    return 4.0L * coshl(x);
+    return asinhl(1 - x/4);
 }
 
 long double newtonSin(long double x) {
@@ -151,6 +151,50 @@ long double Newton()
     printf("%Lf\n", x);
 }
 
+long double Secant()
+{
+    long double x0 = 0.0L;
+    long double x1 = 1.0L;
+    long double x2 = 0.0L;
+    int n = 0;
+
+    printf("Secant\n");
+
+    while (n < MAXN) {
+        x2 = x1 - tanFunction(x1) * (x1 - x0) / (tanFunction(x1) - tanFunction(x0));
+
+        if (fabsl(x2 - x1) < EPS)
+        {
+            break;
+        }
+
+        x0 = x1;
+        x1 = x2;
+        n += 1;
+    }
+
+    printf("%Lf\n", x2);
+
+    x0 = 0.0L;
+    x1 = 1.0L;
+    x2 = 0.0L;
+    n = 0;
+
+    while (n < MAXN) {
+        x2 = x1 - sinFunction(x1) * (x1 - x0) / (sinFunction(x1) - sinFunction(x0));
+
+        if (fabsl(x2 - x1) < EPS)
+        {
+            break;
+        }
+
+        x0 = x1;
+        x1 = x2;
+        n += 1;
+    }
+
+    printf("%Lf\n", x2);
+}
 
 
 int main() {
@@ -165,5 +209,9 @@ int main() {
     printf("");
 
     Newton();
+
+    printf("");
+
+    Secant();
     return 0;
 }
