@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #define MAXN 1000
-#define EPS 0.0001
+#define EPS 0.000000001
 
 long double tanFunction(long double x) {
     return tanhl(x) + 2.0L * (x-1.0L);
@@ -29,7 +29,7 @@ long double newtonSin(long double x) {
 }
 
 
-long double Picard() {
+void Picard() {
 
     int n = 0;
     long double x0 = 0.0L;
@@ -39,13 +39,13 @@ long double Picard() {
     while (n < MAXN) {
         oldX0 = x0;
         x0 = picardTan(x0);
-        if (fabsl(x0 - oldX0) < EPS) {
+        if (fabsl(x0 - oldX0) < EPS || fabsl(x0) < EPS) {
             break;
         }
         n += 1;
     }
 
-    printf("%Lf\n", x0);
+    printf("%0.9Lf\n", x0);
 
     n = 0;
     x0 = 0.0L;
@@ -54,18 +54,18 @@ long double Picard() {
     while (n < MAXN) {
         oldX0 = x0;
         x0 = picardSin(x0);
-        if (fabsl(x0 - oldX0) < EPS) {
+        if (fabsl(x0 - oldX0) < EPS || fabsl(x0) < EPS) {
             break;
         }
         n += 1;
     }
 
-    printf("%Lf\n", x0);
+    printf("%0.9Lf\n", x0);
 
 
 }
 
-long double Bisection() {
+void Bisection() {
 
     long double a = 0.0L;
     long double b = 1.0L;
@@ -82,10 +82,14 @@ long double Bisection() {
         } else {
             a = c;
         }
+
+        if (fabsl((b-a))/2 < EPS || fabsl((a+b)/2) < EPS) {
+            break;
+        }
         n += 1;
     }
 
-    printf("%Lf\n", c);
+    printf("%0.9Lf\n", c);
 
 
     a = 0.0L;
@@ -102,18 +106,23 @@ long double Bisection() {
         } else {
             a = c;
         }
+
+        if (fabsl((b-a))/2 < EPS || fabsl((a+b)/2) < EPS) {
+            break;
+        }
+
         n += 1;
     }
 
 
 
-    printf("%Lf\n", c);
+    printf("%0.9Lf\n", c);
 
 
 
 }
 
-long double Newton()
+void Newton()
 {
     long double x = 0;
     long double x0 = 0;
@@ -124,7 +133,7 @@ long double Newton()
     while (n < MAXN) {
         x0 = x - tanFunction(x)/newtonTan(x);
 
-        if (fabsl(x0 - x) < EPS)
+        if (fabsl(x0 - x) < EPS || fabsl(x0) < EPS)
         {
             break;
         }
@@ -133,13 +142,13 @@ long double Newton()
         n += 1;
     }
 
-    printf("%Lf\n", x);
+    printf("%0.9Lf\n", x);
 
 
     while (n < MAXN) {
         x0 = x - sinFunction(x)/newtonSin(x);
 
-        if (fabsl(x0 - x) < EPS)
+        if (fabsl(x0 - x) < EPS || fabsl(x0) < EPS)
         {
             break;
         }
@@ -148,10 +157,10 @@ long double Newton()
         n += 1;
     }
 
-    printf("%Lf\n", x);
+    printf("%0.9Lf\n", x);
 }
 
-long double Secant()
+void Secant()
 {
     long double x0 = 0.0L;
     long double x1 = 1.0L;
@@ -163,7 +172,7 @@ long double Secant()
     while (n < MAXN) {
         x2 = x1 - tanFunction(x1) * (x1 - x0) / (tanFunction(x1) - tanFunction(x0));
 
-        if (fabsl(x2 - x1) < EPS)
+        if (fabsl(x2 - x1) < EPS || fabsl(x2) < EPS)
         {
             break;
         }
@@ -173,7 +182,7 @@ long double Secant()
         n += 1;
     }
 
-    printf("%Lf\n", x2);
+    printf("%0.9Lf\n", x2);
 
     x0 = 0.0L;
     x1 = 1.0L;
@@ -183,7 +192,7 @@ long double Secant()
     while (n < MAXN) {
         x2 = x1 - sinFunction(x1) * (x1 - x0) / (sinFunction(x1) - sinFunction(x0));
 
-        if (fabsl(x2 - x1) < EPS)
+        if (fabsl(x2 - x1) < EPS || fabsl(x2) < EPS)
         {
             break;
         }
@@ -193,7 +202,7 @@ long double Secant()
         n += 1;
     }
 
-    printf("%Lf\n", x2);
+    printf("%0.9Lf\n", x2);
 }
 
 
