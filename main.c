@@ -1,28 +1,28 @@
 #include <stdio.h>
 #include <math.h>
 
-#define EPSILON 1e-6  // Kryterium dokładności
-#define MAX_ITER 100  // Maksymalna liczba iteracji
+#define EPSILON 1e-6L  // Kryterium dokładności
+#define MAX_ITER 100   // Maksymalna liczba iteracji
 
 // Funkcje układu równań nieliniowych
-void computeFunctions(double x, double y, double z, double F[3]) {
+void computeFunctions(long double x, long double y, long double z, long double F[3]) {
     F[0] = x*x + y*y + z*z - 4;
     F[1] = x*x + (y*y)/2 - 1;
     F[2] = x*y - 0.5;
 }
 
 // Macierz Jacobiego
-void computeJacobian(double x, double y, double z, double J[3][3]) {
+void computeJacobian(long double x, long double y, long double z, long double J[3][3]) {
     J[0][0] = 2*x;  J[0][1] = 2*y;  J[0][2] = 2*z;
     J[1][0] = 2*x;  J[1][1] = y;    J[1][2] = 0;
     J[2][0] = y;    J[2][1] = x;    J[2][2] = 0;
 }
 
 // Rozwiązywanie układu J * dX = -F metodą eliminacji Gaussa
-void solveLinearSystem(double J[3][3], double F[3], double dX[3]) {
+void solveLinearSystem(long double J[3][3], long double F[3], long double dX[3]) {
     int i, j, k;
-    double ratio;
-    double A[3][4]; // Rozszerzona macierz (J | -F)
+    long double ratio;
+    long double A[3][4]; // Rozszerzona macierz (J | -F)
 
     // Tworzenie rozszerzonej macierzy
     for (i = 0; i < 3; i++) {
@@ -53,13 +53,13 @@ void solveLinearSystem(double J[3][3], double F[3], double dX[3]) {
 }
 
 // Norma wektora (używana do warunków stopu)
-double vectorNorm(double v[3]) {
-    return sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+long double vectorNorm(long double v[3]) {
+    return sqrtl(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 }
 
 int main() {
-    double x = 1.0, y = 1.0, z = 1.0; // Początkowe przybliżenie
-    double F[3], J[3][3], dX[3];
+    long double x = 1.0L, y = 1.0L, z = 1.0L; // Początkowe przybliżenie
+    long double F[3], J[3][3], dX[3];
     int iter;
 
     printf("Iteracja | x | y | z | Norma korekty | Norma residuum\n");
@@ -70,11 +70,11 @@ int main() {
         computeJacobian(x, y, z, J);
         solveLinearSystem(J, F, dX);
 
-        double norm_dX = vectorNorm(dX);
-        double norm_F = vectorNorm(F);
+        long double norm_dX = vectorNorm(dX);
+        long double norm_F = vectorNorm(F);
 
         // Wypisanie wyników pośrednich
-        printf("%3d | %.6f | %.6f | %.6f | %.6e | %.6e\n", iter, x, y, z, norm_dX, norm_F);
+        printf("%3d | %.6Lf | %.6Lf | %.6Lf | %.6Le | %.6Le\n", iter, x, y, z, norm_dX, norm_F);
 
         // Warunki stopu
         if (norm_dX < EPSILON || norm_F < EPSILON) {
@@ -87,6 +87,6 @@ int main() {
         z += dX[2];
     }
 
-    printf("\nRozwiązanie: x = %.6f, y = %.6f, z = %.6f\n", x, y, z);
+    printf("\nRozwiazanie: x = %.6Lf, y = %.6Lf, z = %.6Lf\n", x, y, z);
     return 0;
 }
