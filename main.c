@@ -81,7 +81,7 @@ void Bisection() {
     while (n < MAXN) {
         c = (a + b) / 2.0L;
         fx = tanFunction(c);
-        if (tanFunction(c) * tanFunction(a) < 0) {
+        if ((tanFunction(c) > 0 && tanFunction(a) < 0) || (tanFunction(c) < 0 && tanFunction(a) > 0)) {
             b = c;
         } else {
             a = c;
@@ -105,7 +105,7 @@ void Bisection() {
     while (n < MAXN) {
         c = (a + b) / 2.0L;
         fx = sinFunction(c);
-        if (sinFunction(c) * sinFunction(a) < 0) {
+        if ((sinFunction(c) > 0 && sinFunction(a) < 0) || (sinFunction(c) < 0 && sinFunction(a) > 0)) {
             b = c;
         } else {
             a = c;
