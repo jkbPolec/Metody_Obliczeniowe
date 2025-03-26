@@ -5,20 +5,20 @@
 #define MAX_ITER 100
 
 // Funkcje układu równań nieliniowych
-void computeFunctions(long double x, long double y, long double z, long double F[3]) {
+void FunctionVector(long double x, long double y, long double z, long double F[3]) {
     F[0] = x*x + y*y + z*z - 4;
     F[1] = x*x + (y*y)/2 - 1;
     F[2] = x*y - 0.5;
 }
 
 // Macierz Jacobiego
-void computeJacobian(long double x, long double y, long double z, long double J[3][3]) {
+void JacobianMatrix(long double x, long double y, long double z, long double J[3][3]) {
     J[0][0] = 2*x;  J[0][1] = 2*y;  J[0][2] = 2*z;
     J[1][0] = 2*x;  J[1][1] = y;    J[1][2] = 0;
     J[2][0] = y;    J[2][1] = x;    J[2][2] = 0;
 }
 
-void solveLinearSystem(long double J[3][3], long double F[3], long double dX[3]) {
+void solveMatrix(long double J[3][3], long double F[3], long double dX[3]) {
     int i, j, k;
     long double ratio;
     long double A[3][4];
@@ -28,7 +28,7 @@ void solveLinearSystem(long double J[3][3], long double F[3], long double dX[3])
         for (j = 0; j < 3; j++) {
             A[i][j] = J[i][j];
         }
-        A[i][3] = -F[i];
+        A[i][3] = F[i];
     }
 
     // Eliminacja Gaussa
@@ -59,30 +59,31 @@ long double vectorNorm(long double v[3]) {
 int main() {
     long double x = 1.0L, y = 1.0L, z = 1.0L; // Początkowe przybliżenie
     long double F[3], J[3][3], dX[3];
-    int iter;
+    int i;
 
     printf("Iteracja | x | y | z | Estymator bledu | Norma residuum\n");
     printf("-----------------------------------------------------------\n");
 
-    for (iter = 0; iter < MAX_ITER; iter++) {
-        computeFunctions(x, y, z, F);
-        computeJacobian(x, y, z, J);
-        solveLinearSystem(J, F, dX);
+    for (i = 0; i < MAX_ITER; i++) {
+        FunctionVector(x, y, z, F);
+        JacobianMatrix(x, y, z, J);
+        solveMatrix(J, F, dX);
 
         long double norm_dX = vectorNorm(dX);
         long double norm_F = vectorNorm(F);
 
         // Wypisanie wyników pośrednich
-        printf("%3d | %.9Lf | %.9Lf | %.9Lf | %.9Lf | %.9Lf\n", iter, x, y, z, norm_dX, norm_F);
+        printf("%3d | %.9Lf | %.9Lf | %.9Lf | %.9Lf | %.9Lf\n", i, x, y, z, norm_dX, norm_F);
 
         // Warunki stopu
-        if (norm_dX < EPSILON || norm_F < EPSILON) {
+        if (fabsl(dX[0]) < EPSILON && fabsl(dX[1]) < EPSILON && fabsl(dX[2]) < EPSILON &&
+            fabsl(F[0]) < EPSILON && fabsl(F[1]) < EPSILON && fabsl(F[2]) < EPSILON) {
             break;
         }
 
-        x += dX[0];
-        y += dX[1];
-        z += dX[2];
+        x -= dX[0];
+        y -= dX[1];
+        z -= dX[2];
     }
 
     printf("\nRozwiazanie: x = %.9Lf, y = %.9Lf, z = %.9Lf\n", x, y, z);
