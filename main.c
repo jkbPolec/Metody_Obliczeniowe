@@ -41,7 +41,7 @@ void Picard() {
         x0 = picardTan(x0);
         fx = tanFunction(x0);
         printf("%d %0.9Lf\t%0.9Lf\t%0.9Lf\n", n, x0, x0-oldX0, fx);
-        if (fabsl(x0 - oldX0) < EPS || fabsl(fx) < EPS) {
+        if (fabsl(x0 - oldX0) < EPS && fabsl(fx) < EPS) {
             break;
         }
         n += 1;
@@ -60,7 +60,7 @@ void Picard() {
         x0 = picardSin(x0);
         fx = sinFunction(x0);
         printf("%d %0.9Lf\t%0.9Lf\t%0.9Lf\n", n, x0, x0-oldX0, fx);
-        if (fabsl(x0 - oldX0) < EPS || fabsl(fx) < EPS) {
+        if (fabsl(x0 - oldX0) < EPS && fabsl(fx) < EPS) {
             break;
         }
         n += 1;
@@ -87,7 +87,7 @@ void Bisection() {
             a = c;
         }
         printf("%d %0.9Lf\t%0.9Lf\t%0.9Lf\n", n, c, fabsl((b-a))/2, fx);
-        if (fabsl((b-a))/2 < EPS || fabsl(fx) < EPS) {
+        if (fabsl((b-a))/2 < EPS && fabsl(fx) < EPS) {
             break;
         }
         n += 1;
@@ -111,7 +111,7 @@ void Bisection() {
             a = c;
         }
         printf("%d %0.9Lf\t%0.9Lf\t%0.9Lf\n", n, c, fabsl((b-a))/2, fx);
-        if (fabsl((b-a))/2 < EPS || fabsl(fx) < EPS) {
+        if (fabsl((b-a))/2 < EPS && fabsl(fx) < EPS) {
             break;
         }
         n += 1;
@@ -131,7 +131,7 @@ void Newton() {
         x0 = x - tanFunction(x)/newtonTan(x);
         fx = tanFunction(x0);
         printf("%d %0.9Lf\t%0.9Lf\t%0.9Lf\n", n, x0, x0-x, fx);
-        if (fabsl(x0 - x) < EPS || fabsl(fx) < EPS) {
+        if (fabsl(x0 - x) < EPS && fabsl(fx) < EPS) {
             break;
         }
         x = x0;
@@ -146,7 +146,7 @@ void Newton() {
         x0 = x - sinFunction(x)/newtonSin(x);
         fx = sinFunction(x0);
         printf("%d %0.9Lf\t%0.9Lf\t%0.9Lf\n", n, x0, x0-x, fx);
-        if (fabsl(x0 - x) < EPS || fabsl(fx) < EPS) {
+        if (fabsl(x0 - x) < EPS && fabsl(fx) < EPS) {
             break;
         }
         x = x0;
@@ -168,7 +168,7 @@ void Secant() {
         x2 = x1 - tanFunction(x1) * (x1 - x0) / (tanFunction(x1) - tanFunction(x0));
         fx = tanFunction(x2);
         printf("%d %0.9Lf\t%0.9Lf\t%0.9Lf\n", n, x2, x2-x1, fx);
-        if (fabsl(x2 - x1) < EPS || fabsl(fx) < EPS) {
+        if (fabsl(x2 - x1) < EPS && fabsl(fx) < EPS) {
             break;
         }
         x0 = x1;
@@ -188,7 +188,7 @@ void Secant() {
         x2 = x1 - sinFunction(x1) * (x1 - x0) / (sinFunction(x1) - sinFunction(x0));
         fx = sinFunction(x2);
         printf("%d %0.9Lf\t%0.9Lf\t%0.9Lf\n", n, x2, x2-x1, fx);
-        if (fabsl(x2 - x1) < EPS || fabsl(fx) < EPS) {
+        if (fabsl(x2 - x1) < EPS && fabsl(fx) < EPS) {
             break;
         }
         x0 = x1;
