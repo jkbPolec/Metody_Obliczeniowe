@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#define EPSILON 1e-6L  // Kryterium dokładności
-#define MAX_ITER 100   // Maksymalna liczba iteracji
+#define EPSILON 1e-9L
+#define MAX_ITER 100
 
 // Funkcje układu równań nieliniowych
 void computeFunctions(long double x, long double y, long double z, long double F[3]) {
@@ -18,11 +18,10 @@ void computeJacobian(long double x, long double y, long double z, long double J[
     J[2][0] = y;    J[2][1] = x;    J[2][2] = 0;
 }
 
-// Rozwiązywanie układu J * dX = -F metodą eliminacji Gaussa
 void solveLinearSystem(long double J[3][3], long double F[3], long double dX[3]) {
     int i, j, k;
     long double ratio;
-    long double A[3][4]; // Rozszerzona macierz (J | -F)
+    long double A[3][4];
 
     // Tworzenie rozszerzonej macierzy
     for (i = 0; i < 3; i++) {
@@ -42,7 +41,7 @@ void solveLinearSystem(long double J[3][3], long double F[3], long double dX[3])
         }
     }
 
-    // Rozwiązanie układu (podstawianie wsteczne)
+    // Rozwiązanie macierzy górnotrójkątnej
     for (i = 2; i >= 0; i--) {
         dX[i] = A[i][3];
         for (j = i + 1; j < 3; j++) {
@@ -52,7 +51,7 @@ void solveLinearSystem(long double J[3][3], long double F[3], long double dX[3])
     }
 }
 
-// Norma wektora (używana do warunków stopu)
+// Norma wektora
 long double vectorNorm(long double v[3]) {
     return sqrtl(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 }
@@ -62,7 +61,7 @@ int main() {
     long double F[3], J[3][3], dX[3];
     int iter;
 
-    printf("Iteracja | x | y | z | Norma korekty | Norma residuum\n");
+    printf("Iteracja | x | y | z | Estymator bledu | Norma residuum\n");
     printf("-----------------------------------------------------------\n");
 
     for (iter = 0; iter < MAX_ITER; iter++) {
@@ -74,19 +73,18 @@ int main() {
         long double norm_F = vectorNorm(F);
 
         // Wypisanie wyników pośrednich
-        printf("%3d | %.6Lf | %.6Lf | %.6Lf | %.6Le | %.6Le\n", iter, x, y, z, norm_dX, norm_F);
+        printf("%3d | %.9Lf | %.9Lf | %.9Lf | %.9Lf | %.9Lf\n", iter, x, y, z, norm_dX, norm_F);
 
         // Warunki stopu
         if (norm_dX < EPSILON || norm_F < EPSILON) {
             break;
         }
 
-        // Aktualizacja rozwiązania
         x += dX[0];
         y += dX[1];
         z += dX[2];
     }
 
-    printf("\nRozwiazanie: x = %.6Lf, y = %.6Lf, z = %.6Lf\n", x, y, z);
+    printf("\nRozwiazanie: x = %.9Lf, y = %.9Lf, z = %.9Lf\n", x, y, z);
     return 0;
 }
