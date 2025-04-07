@@ -77,9 +77,6 @@ long double Bisection() {
 
     while (n < MAXN) {
         c = (a + b) / 2.0L;
-        if (fabsl(b - a) < EPS) {
-            break;
-        }
         if (tanFunction(c) * tanFunction(a) < 0) {
             b = c;
         } else {
@@ -87,6 +84,8 @@ long double Bisection() {
         }
         n += 1;
     }
+
+    printf("%Lf\n", c);
 
 
     a = 0.0L;
@@ -98,9 +97,6 @@ long double Bisection() {
 
     while (n < MAXN) {
         c = (a + b) / 2.0L;
-        if (fabsl(b - a) < EPS) {
-            break;
-        }
         if (sinFunction(c) * sinFunction(a) < 0) {
             b = c;
         } else {
@@ -108,6 +104,12 @@ long double Bisection() {
         }
         n += 1;
     }
+
+
+
+    printf("%Lf\n", c);
+
+
 
 }
 
