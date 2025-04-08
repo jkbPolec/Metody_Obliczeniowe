@@ -4,11 +4,12 @@
 // Procedura eliminacji współczynników (modyfikuje c i d)
 void thomas_algorithm(int n, long double* low, long double* diag, long double* up, long double* b) {
     for (int i = 1; i < n; i++) {
-        double m = low[i-1] / diag[i-1];
+        long double m = low[i-1] / diag[i-1];
         diag[i] -= m * up[i-1];
         b[i] -= m * b[i-1];
     }
 }
+
 
 // Procedura rozwiązania układu (podstawianie wsteczne)
 void back_substitution(int n, long double* diag, long double* up, long double* b, long double* x) {
@@ -21,9 +22,9 @@ void back_substitution(int n, long double* diag, long double* up, long double* b
 int main() {
     int n = 5;
 
-    long double low[] = {2, 4, -6, -6};     // dolna przekątna (n-1)
+    long double low[] = {2, 4, -6, -8};     // dolna przekątna (n-1)
     long double diag[] = {100, 200, 300, 200, 100}; // główna przekątna (n)
-    long double up[] = {-1, -3, 5, 7};         // górna przekątna (n-1)
+    long double up[] = {-1, -3, 5, -7};         // górna przekątna (n-1)
     long double b[] = {199, 195, 929, 954, 360}; // wektor b (prawa strona)
     long double x[5]; // rozwiązanie
 
