@@ -8,7 +8,7 @@
 #define END (PI / 2.0)
 
 // Wybierz precyzję: double albo long double
-#define TYPE long double
+#define TYPE double
 #define COS(x) cosl(x)
 #define FABS(x) fabsl(x)
 
