@@ -4,11 +4,8 @@
 
 #define PI 3.14159265358979323846
 #define N 50 // liczba kroków (różne h)
-#define START 0.0
-#define END (PI / 2.0)
 
-// Wybierz precyzję: double albo long double
-#define TYPE double
+#define TYPE long double
 #define COS(x) cosl(x)
 #define FABS(x) fabsl(x)
 
@@ -46,8 +43,8 @@ int main() {
     fprintf(fp, "h,blad_forward,blad_backward,blad_central,blad_central3\n");
 
     for (int i = 1; i <= N; i++) {
-        TYPE h = (TYPE)powl(2.0, -i);  // h: 2^-1, 2^-2, ..., 2^-N
-        TYPE x = PI / 4; // środek przedziału
+        TYPE h = (TYPE)powl(2.0, -i);
+        TYPE x = PI / 4;
 
         TYPE df_f = forward_diff(f, x, h);
         TYPE df_b = backward_diff(f, x, h);
