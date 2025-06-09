@@ -9,13 +9,13 @@
 // Czebyszewa. Wykonaj wykres interpolowanej funkcji oraz uzyskanych wielomianów
 // interpolacyjnych.
 
-#define N 60  // liczba węzłów
+#define N  60 // liczba węzłów
 #define X_MIN (-1.0)
 #define X_MAX 1.0
 #define POINTS 1000
 
 double f(double x) {
-    return 1.0 / (1 + pow(x, 4));
+    return x / (1 + (x * x * x * x));
 }
 
 void generate_equispaced_nodes(double *x) {
