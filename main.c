@@ -263,11 +263,8 @@ double solve_pde(int Nx, double lambda, TimeScheme scheme, LinearSolver solver,
 
 // Przeklej w miejsce STAREJ funkcji main
 int main() {
-    // =================================================================================
     // CZĘŚĆ 1: Badanie zbieżności (bez zmian)
-    // =================================================================================
     printf("CZĘŚĆ 1: Badanie zbieżności (max błąd dla t=T_MAX w funkcji h)\n");
-    // ... (ta część pozostaje taka sama, więc ją skrócę dla czytelności)
     FILE *f_err_h = fopen("error_vs_h.dat", "w");
     fprintf(f_err_h, "# h err_laasonen_thomas err_laasonen_lu err_cn_thomas err_cn_lu\n");
     for (int Nx = 11; Nx <= 321; Nx *= 2, Nx--) {
@@ -282,19 +279,16 @@ int main() {
     fclose(f_err_h);
     printf("Zakończono część 1. Wyniki w 'error_vs_h.dat'.\n");
 
-    // =================================================================================
-    // CZĘŚĆ 2 i 3: Generowanie plików dla uwydatnienia różnic
-    // =================================================================================
+    // CZĘŚĆ 2 i 3: Generowanie plików z parametrami dającymi pożądany wykres błędu
     printf("\n\nCZĘŚĆ 2 i 3: Generowanie plików do wykresów dla wszystkich kombinacji metod\n");
-    printf("Użyto parametrów uwydatniających różnice:\n");
 
-    // Zwiększamy Nx, aby pokazać różnicę w wydajności Thomas vs LU
     int Nx_fine = 101;
-    // Zwiększamy lambdę, aby pokazać różnicę w dokładności Laasonen vs C-N
+    // WRACAMY DO MNIEJSZEJ WARTOŚCI LAMBDA, ABY UZYSKAĆ MAŁY BŁĄD
     double lambda_val = 1.0;
 
-    printf(" - Duża siatka: Nx = %d\n", Nx_fine);
-    printf(" - Duża lambda: lambda = %.1f\n", lambda_val);
+    printf("Użyto parametrów:\n");
+    printf(" - Siatka: Nx = %d\n", Nx_fine);
+    printf(" - Lambda: lambda = %.1f\n", lambda_val);
 
     TimeScheme schemes[] = {LAASONEN, CRANK_NICOLSON};
     LinearSolver solvers[] = {THOMAS, LU_DECOMP};
@@ -308,17 +302,13 @@ int main() {
             sprintf(sol_filename, "solution_snapshots_%s_%s.dat", scheme_names[i], solver_names[j]);
             sprintf(err_filename, "error_vs_time_%s_%s.dat", scheme_names[i], solver_names[j]);
 
-            // Pomiar czasu
             clock_t start = clock();
             solve_pde(Nx_fine, lambda_val, schemes[i], solvers[j], 1, sol_filename, err_filename);
             clock_t end = clock();
             double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-
             printf("    Wygenerowano pliki: %s, %s (czas: %.4f s)\n", sol_filename, err_filename, cpu_time_used);
         }
     }
-
     printf("\nZakończono. Użyj skryptu w Pythonie do wizualizacji danych.\n");
-
     return 0;
 }
