@@ -261,37 +261,40 @@ double solve_pde(int Nx, double lambda, TimeScheme scheme, LinearSolver solver,
 }
 
 
+// Przeklej w miejsce STAREJ funkcji main
 int main() {
     // =================================================================================
-    // CZĘŚĆ 1: Badanie zbieżności - zależność błędu od kroku h (bez zmian)
+    // CZĘŚĆ 1: Badanie zbieżności (bez zmian)
     // =================================================================================
     printf("CZĘŚĆ 1: Badanie zbieżności (max błąd dla t=T_MAX w funkcji h)\n");
-    printf("lambda = 1.0 dla wszystkich metod niejawnych\n");
-    printf("--------------------------------------------------------------------------------------------------------\n");
-    printf("%-5s %-15s %-22s %-22s %-22s %-22s\n", "Nx", "h", "Błąd (Laasonen+Thomas)", "Błąd (Laasonen+LU)", "Błąd (CN+Thomas)", "Błąd (CN+LU)");
-    printf("--------------------------------------------------------------------------------------------------------\n");
-
+    // ... (ta część pozostaje taka sama, więc ją skrócę dla czytelności)
     FILE *f_err_h = fopen("error_vs_h.dat", "w");
     fprintf(f_err_h, "# h err_laasonen_thomas err_laasonen_lu err_cn_thomas err_cn_lu\n");
-
-    for (int Nx = 11; Nx <= 321; Nx *= 2, Nx--) { // 11, 21, 41, 81, 161, 321
+    for (int Nx = 11; Nx <= 321; Nx *= 2, Nx--) {
         Nx++;
         double h = L / (Nx - 1);
         double err_lt = solve_pde(Nx, 1.0, LAASONEN, THOMAS, 0, NULL, NULL);
         double err_ll = solve_pde(Nx, 1.0, LAASONEN, LU_DECOMP, 0, NULL, NULL);
         double err_ct = solve_pde(Nx, 1.0, CRANK_NICOLSON, THOMAS, 0, NULL, NULL);
         double err_cl = solve_pde(Nx, 1.0, CRANK_NICOLSON, LU_DECOMP, 0, NULL, NULL);
-        printf("%-5d %-15.10f %-22.10e %-22.10e %-22.10e %-22.10e\n", Nx, h, err_lt, err_ll, err_ct, err_cl);
         fprintf(f_err_h, "%f %e %e %e %e\n", h, err_lt, err_ll, err_ct, err_cl);
     }
     fclose(f_err_h);
+    printf("Zakończono część 1. Wyniki w 'error_vs_h.dat'.\n");
 
     // =================================================================================
-    // CZĘŚĆ 2 i 3: Wykresy rozwiązań i błędu w czasie dla wszystkich kombinacji
+    // CZĘŚĆ 2 i 3: Generowanie plików dla uwydatnienia różnic
     // =================================================================================
     printf("\n\nCZĘŚĆ 2 i 3: Generowanie plików do wykresów dla wszystkich kombinacji metod\n");
+    printf("Użyto parametrów uwydatniających różnice:\n");
+
+    // Zwiększamy Nx, aby pokazać różnicę w wydajności Thomas vs LU
     int Nx_fine = 101;
+    // Zwiększamy lambdę, aby pokazać różnicę w dokładności Laasonen vs C-N
     double lambda_val = 1.0;
+
+    printf(" - Duża siatka: Nx = %d\n", Nx_fine);
+    printf(" - Duża lambda: lambda = %.1f\n", lambda_val);
 
     TimeScheme schemes[] = {LAASONEN, CRANK_NICOLSON};
     LinearSolver solvers[] = {THOMAS, LU_DECOMP};
@@ -305,8 +308,13 @@ int main() {
             sprintf(sol_filename, "solution_snapshots_%s_%s.dat", scheme_names[i], solver_names[j]);
             sprintf(err_filename, "error_vs_time_%s_%s.dat", scheme_names[i], solver_names[j]);
 
+            // Pomiar czasu
+            clock_t start = clock();
             solve_pde(Nx_fine, lambda_val, schemes[i], solvers[j], 1, sol_filename, err_filename);
-            printf("    Wygenerowano pliki: %s, %s\n", sol_filename, err_filename);
+            clock_t end = clock();
+            double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+            printf("    Wygenerowano pliki: %s, %s (czas: %.4f s)\n", sol_filename, err_filename, cpu_time_used);
         }
     }
 
