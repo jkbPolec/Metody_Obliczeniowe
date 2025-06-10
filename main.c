@@ -116,20 +116,18 @@ void lu_solve(double **LU, const int *p, const double *b, double *x, int n) {
 
 
 // --- Główna funkcja symulacji ---
-double solve_pde(int Nx, double lambda, TimeScheme scheme, LinearSolver solver, int generate_files) {
+double solve_pde(int Nx, double lambda, TimeScheme scheme, LinearSolver solver,
+                 int generate_files, const char* sol_filename_in, const char* err_filename_in) {
     // --- Inicjalizacja siatki i parametrów ---
     double h = L / (Nx - 1);
     double dt = lambda * h * h / D;
     int Nt = (int)(T_MAX / dt);
 
     if (generate_files) {
-        printf("\n--- Uruchomienie symulacji dla: ---\n");
-        printf("Schemat czasowy: %s\n", (scheme == LAASONEN) ? "Laasonen" : "Crank-Nicolson");
-        printf("Solver liniowy:  %s\n", (solver == THOMAS) ? "Thomas" : "LU dla pełnej macierzy");
-        printf("Nx = %d, h = %f\n", Nx, h);
-        printf("Nt = %d, dt = %f\n", Nt, dt);
-        printf("lambda = %f\n", lambda);
-        printf("----------------------------------\n");
+        printf("\n--- Symulacja dla: %s + %s ---\n",
+            (scheme == LAASONEN) ? "Laasonen" : "Crank-Nicolson",
+            (solver == THOMAS) ? "Thomas" : "LU");
+        printf("    Nx=%d, h=%.4f, Nt=%d, dt=%.6f, lambda=%.2f\n", Nx, h, Nt, dt, lambda);
     }
 
     // --- Alokacja pamięci ---
@@ -148,11 +146,9 @@ double solve_pde(int Nx, double lambda, TimeScheme scheme, LinearSolver solver, 
     }
 
     // --- Przygotowanie macierzy A dla układu Ax=b ---
-    // Wersja trójdiagonalna (dla Thomasa)
-    double *a_diag = (double*)malloc((Nx - 1) * sizeof(double)); // dolna
-    double *b_diag = (double*)malloc(Nx * sizeof(double));       // główna
-    double *c_diag = (double*)malloc((Nx - 1) * sizeof(double)); // górna
-    // Wersja pełna (dla LU)
+    double *a_diag = (double*)malloc((Nx - 1) * sizeof(double));
+    double *b_diag = (double*)malloc(Nx * sizeof(double));
+    double *c_diag = (double*)malloc((Nx - 1) * sizeof(double));
     double **A_full = NULL;
     int *pivot = NULL;
 
@@ -165,42 +161,32 @@ double solve_pde(int Nx, double lambda, TimeScheme scheme, LinearSolver solver, 
     // --- Wypełnianie macierzy A w zależności od schematu ---
     if (scheme == LAASONEN) {
         for(int i = 1; i < Nx - 1; i++) {
-            a_diag[i-1] = -lambda;
-            b_diag[i] = 1.0 + 2.0 * lambda;
-            c_diag[i] = -lambda;
+            a_diag[i-1] = -lambda; b_diag[i] = 1.0 + 2.0 * lambda; c_diag[i] = -lambda;
         }
-        // Warunki brzegowe ∂U/∂x=0 (dysk. centralna z punktem-widmo)
         b_diag[0] = 1.0 + 2.0 * lambda; c_diag[0] = -2.0 * lambda;
         a_diag[Nx-2] = -2.0 * lambda; b_diag[Nx-1] = 1.0 + 2.0 * lambda;
     } else { // CRANK_NICOLSON
         double l_half = lambda / 2.0;
         for(int i = 1; i < Nx - 1; i++) {
-            a_diag[i-1] = -l_half;
-            b_diag[i] = 1.0 + lambda;
-            c_diag[i] = -l_half;
+            a_diag[i-1] = -l_half; b_diag[i] = 1.0 + lambda; c_diag[i] = -l_half;
         }
-        // Warunki brzegowe
         b_diag[0] = 1.0 + lambda; c_diag[0] = -lambda;
         a_diag[Nx-2] = -lambda; b_diag[Nx-1] = 1.0 + lambda;
     }
 
     if (solver == LU_DECOMP) {
         for(int i=0; i<Nx; i++) A_full[i][i] = b_diag[i];
-        for(int i=0; i<Nx-1; i++) {
-            A_full[i+1][i] = a_diag[i];
-            A_full[i][i+1] = c_diag[i];
-        }
+        for(int i=0; i<Nx-1; i++) { A_full[i+1][i] = a_diag[i]; A_full[i][i+1] = c_diag[i]; }
         if (lu_decomposition(A_full, pivot, Nx) != 0) {
-            fprintf(stderr, "Macierz jest osobliwa!\n");
-            exit(1);
+            fprintf(stderr, "Macierz jest osobliwa!\n"); exit(1);
         }
     }
 
     // --- Pliki wyjściowe (jeśli wymagane) ---
     FILE *f_sol = NULL, *f_err_t = NULL;
     if (generate_files) {
-        f_sol = fopen("solution_snapshots.dat", "w");
-        f_err_t = fopen("error_vs_time.dat", "w");
+        f_sol = fopen(sol_filename_in, "w");
+        f_err_t = fopen(err_filename_in, "w");
         fprintf(f_sol, "# x U_num(t=0) U_an(t=0) U_num(t=0.1) U_an(t=0.1) U_num(t=0.25) U_an(t=0.25) U_num(t=0.5) U_an(t=0.5)\n");
         fprintf(f_err_t, "# t max_abs_error\n");
     }
@@ -216,8 +202,6 @@ double solve_pde(int Nx, double lambda, TimeScheme scheme, LinearSolver solver, 
     // --- Główna pętla czasowa ---
     for (int k = 0; k <= Nt; k++) {
         double t = k * dt;
-
-        // Zapisywanie danych do plików
         if (generate_files) {
             if (snapshot_idx < 4 && t >= snapshot_times[snapshot_idx]) {
                  memcpy(snapshot_data[snapshot_idx], U, Nx * sizeof(double));
@@ -230,55 +214,37 @@ double solve_pde(int Nx, double lambda, TimeScheme scheme, LinearSolver solver, 
             }
             fprintf(f_err_t, "%f %e\n", t, max_err_t);
         }
-
-        if (k == Nt) break; // Ostatni krok to tylko pomiar błędu
-
-        // Konstrukcja wektora prawej strony (RHS)
+        if (k == Nt) break;
         if (scheme == LAASONEN) {
             memcpy(RHS, U, Nx * sizeof(double));
         } else { // CRANK_NICOLSON
             double l_half = lambda / 2.0;
-            // Wnętrze
-            for (int i = 1; i < Nx - 1; i++) {
-                RHS[i] = l_half * U[i-1] + (1.0 - lambda) * U[i] + l_half * U[i+1];
-            }
-            // Brzegi (z warunkami ∂U/∂x=0)
+            for (int i = 1; i < Nx - 1; i++) { RHS[i] = l_half * U[i-1] + (1.0 - lambda) * U[i] + l_half * U[i+1]; }
             RHS[0] = (1.0 - lambda) * U[0] + lambda * U[1];
             RHS[Nx-1] = lambda * U[Nx-2] + (1.0 - lambda) * U[Nx-1];
         }
-
-        // Rozwiązanie układu liniowego
         if (solver == THOMAS) {
             thomas_solver(a_diag, b_diag, c_diag, RHS, U_next, Nx);
-        } else { // LU_DECOMP
+        } else {
             lu_solve(A_full, pivot, RHS, U_next, Nx);
         }
-
-        // Aktualizacja rozwiązania
         memcpy(U, U_next, Nx * sizeof(double));
     }
 
     // --- Końcowe obliczenie błędu i zapis ---
     double max_error = 0.0;
     for (int i = 0; i < Nx; i++) {
-        double x = i * h;
-        double error = fabs(U[i] - analytical_solution(x, T_MAX));
-        if (error > max_error) {
-            max_error = error;
-        }
+        double error = fabs(U[i] - analytical_solution(i * h, T_MAX));
+        if (error > max_error) max_error = error;
     }
-
     if (generate_files) {
         for (int i = 0; i < Nx; i++) {
             double x = i * h;
             fprintf(f_sol, "%f ", x);
-            for(int j=0; j<4; j++) {
-                fprintf(f_sol, "%f %f ", snapshot_data[j][i], analytical_solution(x, snapshot_times[j]));
-            }
+            for(int j=0; j<4; j++) fprintf(f_sol, "%f %f ", snapshot_data[j][i], analytical_solution(x, snapshot_times[j]));
             fprintf(f_sol, "\n");
         }
-        fclose(f_sol);
-        fclose(f_err_t);
+        fclose(f_sol); fclose(f_err_t);
         for(int i=0; i<4; i++) free(snapshot_data[i]);
         free(snapshot_data);
     }
@@ -288,8 +254,7 @@ double solve_pde(int Nx, double lambda, TimeScheme scheme, LinearSolver solver, 
     free(a_diag); free(b_diag); free(c_diag);
     if (solver == LU_DECOMP) {
         for (int i = 0; i < Nx; i++) free(A_full[i]);
-        free(A_full);
-        free(pivot);
+        free(A_full); free(pivot);
     }
 
     return max_error;
@@ -298,7 +263,7 @@ double solve_pde(int Nx, double lambda, TimeScheme scheme, LinearSolver solver, 
 
 int main() {
     // =================================================================================
-    // CZĘŚĆ 1: Badanie zbieżności - zależność błędu od kroku h
+    // CZĘŚĆ 1: Badanie zbieżności - zależność błędu od kroku h (bez zmian)
     // =================================================================================
     printf("CZĘŚĆ 1: Badanie zbieżności (max błąd dla t=T_MAX w funkcji h)\n");
     printf("lambda = 1.0 dla wszystkich metod niejawnych\n");
@@ -312,42 +277,40 @@ int main() {
     for (int Nx = 11; Nx <= 321; Nx *= 2, Nx--) { // 11, 21, 41, 81, 161, 321
         Nx++;
         double h = L / (Nx - 1);
-        double err_lt = solve_pde(Nx, 1.0, LAASONEN, THOMAS, 0);
-        double err_ll = solve_pde(Nx, 1.0, LAASONEN, LU_DECOMP, 0);
-        double err_ct = solve_pde(Nx, 1.0, CRANK_NICOLSON, THOMAS, 0);
-        double err_cl = solve_pde(Nx, 1.0, CRANK_NICOLSON, LU_DECOMP, 0);
+        double err_lt = solve_pde(Nx, 1.0, LAASONEN, THOMAS, 0, NULL, NULL);
+        double err_ll = solve_pde(Nx, 1.0, LAASONEN, LU_DECOMP, 0, NULL, NULL);
+        double err_ct = solve_pde(Nx, 1.0, CRANK_NICOLSON, THOMAS, 0, NULL, NULL);
+        double err_cl = solve_pde(Nx, 1.0, CRANK_NICOLSON, LU_DECOMP, 0, NULL, NULL);
         printf("%-5d %-15.10f %-22.10e %-22.10e %-22.10e %-22.10e\n", Nx, h, err_lt, err_ll, err_ct, err_cl);
         fprintf(f_err_h, "%f %e %e %e %e\n", h, err_lt, err_ll, err_ct, err_cl);
     }
     fclose(f_err_h);
 
     // =================================================================================
-    // CZĘŚĆ 2 i 3: Wykresy rozwiązań i błędu w czasie dla wybranej siatki
+    // CZĘŚĆ 2 i 3: Wykresy rozwiązań i błędu w czasie dla wszystkich kombinacji
     // =================================================================================
-    printf("\n\nCZĘŚĆ 2 i 3: Generowanie plików do wykresów dla wybranej siatki\n");
-    int Nx_fine = 101; // Dobra siatka dla dokładnych wyników
-    double lambda_cn = 1.0;
+    printf("\n\nCZĘŚĆ 2 i 3: Generowanie plików do wykresów dla wszystkich kombinacji metod\n");
+    int Nx_fine = 101;
+    double lambda_val = 1.0;
 
-    clock_t start, end;
-    double cpu_time_used;
+    TimeScheme schemes[] = {LAASONEN, CRANK_NICOLSON};
+    LinearSolver solvers[] = {THOMAS, LU_DECOMP};
+    const char* scheme_names[] = {"Laasonen", "CN"};
+    const char* solver_names[] = {"Thomas", "LU"};
 
-    start = clock();
-    solve_pde(Nx_fine, lambda_cn, CRANK_NICOLSON, THOMAS, 1);
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("Wygenerowano 'solution_snapshots.dat' i 'error_vs_time.dat' dla metody Crank-Nicolson + Thomas.\n");
-    printf("Czas obliczeń: %f sekund\n", cpu_time_used);
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            char sol_filename[100];
+            char err_filename[100];
+            sprintf(sol_filename, "solution_snapshots_%s_%s.dat", scheme_names[i], solver_names[j]);
+            sprintf(err_filename, "error_vs_time_%s_%s.dat", scheme_names[i], solver_names[j]);
 
-    start = clock();
-    solve_pde(Nx_fine, lambda_cn, CRANK_NICOLSON, LU_DECOMP, 0); // Uruchamiamy tylko dla porównania czasu
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("Porównawczy czas obliczeń dla Crank-Nicolson + LU: %f sekund\n", cpu_time_used);
+            solve_pde(Nx_fine, lambda_val, schemes[i], solvers[j], 1, sol_filename, err_filename);
+            printf("    Wygenerowano pliki: %s, %s\n", sol_filename, err_filename);
+        }
+    }
 
-    printf("\nZakończono. Użyj gnuplota lub innego programu do wizualizacji danych z plików:\n");
-    printf("- error_vs_h.dat\n");
-    printf("- solution_snapshots.dat\n");
-    printf("- error_vs_time.dat\n");
+    printf("\nZakończono. Użyj skryptu w Pythonie do wizualizacji danych.\n");
 
     return 0;
 }
